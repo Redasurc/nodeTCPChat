@@ -1,12 +1,10 @@
-class Users {
+class Chatroom {
   clients: Array;
 	constructor() {
 		this.clients = [];	
 	}
 	login(socket: socket, username: string){
-		var a = new Client(); 
-		a.setSocket(socket);
-		a.setName(username);
+		var a = new Client(username, socket); 
 		this.clients.push(a);
 	}
 	logout(socket: socket){
@@ -26,31 +24,21 @@ class Users {
 	write(socket: socket, msg: string){
 		for(var i = 0; i < this.clients.length; i++) {
 			if(this.clients[i].getSocket() == socket){
-				this.clients[i].getSocket().write("\r" + msg + "\r\n");
-                this.clients[i].getSocket().write("    "  + this.clients[i].getName() + ": ");
+				this.clients[i].write(msg);
 			}
 		}
 	}
 	writeAll(msg: string){
 		for(var i = 0; i < this.clients.length; i++) {
-				this.clients[i].getSocket().write("\r" + msg + "\r\n");
-                this.clients[i].getSocket().write("    "  + this.clients[i].getName() + ": ");
+				this.clients[i].write(msg);
 		}
 	}
 	writeAllExcept(socket: socket, msg: string){
 		for(var i = 0; i < this.clients.length; i++) {
 			if(this.clients[i].getSocket() != socket){
-				this.clients[i].getSocket().write("\r" + msg + "\r\n");
-            	this.clients[i].getSocket().write("    "  + this.clients[i].getName() + ": ");
+				this.clients[i].write(msg);
 			}
 		}
-	}
-	sendNameHeader(socket:socket){
-		for(var i = 0; i < this.clients.length; i++) {
-			if(this.clients[i].getSocket() == socket){
-                this.clients[i].getSocket().write("    "  + this.clients[i].getName() + ": ");
-			}
-		}		
 	}
 	getIndexBySocket(socket: socket){
 		for(var i = 0; i < this.clients.length; i++) {
@@ -59,14 +47,21 @@ class Users {
 			}
 		}
 	}
+	sendNameHeader(socket: socket){
+		for(var i = 0; i < this.clients.length; i++) {
+			if(this.clients[i].getSocket() == socket){
+				this.clients[i].sendNameHeader();
+			}
+		}
+	}
 }
 
 class Client{
 	username: string;
 	socket: socket;
-	constructor() {
-		this.username = "";
-		this.socket = null;	
+	constructor(name: string, socket: string) {
+		this.username = name;
+		this.socket = socket;	
 	}
 	setName(name: string){
 		this.username = name;
@@ -80,4 +75,25 @@ class Client{
 	getSocket(){
 		return this.socket;
 	}
+	/**
+	  * Send msg to client, removes the name: header and sends a new one
+	  */
+	write(msg: string){
+		this.socket.write("\r" + msg + "\r\n");
+		this.sendNameHeader();
+	}
+	/**
+	  * Send msg to client without trying to change or remove name: header. also doesn't send a new one
+	  */
+	writeRaw(msg: string){
+		this.socket.write(msg);
+	}
+	/**
+	  * Sends a name: header to the client
+	  */
+	sendNameHeader(){
+		this.socket.write("    "  + this.username + ": ");
+	}
 }
+
+exports.Chatroom = Chatroom;
