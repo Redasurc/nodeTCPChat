@@ -4,7 +4,7 @@ net = require('net');
 
 // Config
 
-var PORT = 8000;
+PORT = 8000;
 
 
 
