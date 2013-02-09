@@ -1,19 +1,22 @@
+var CommandParser = require('./CommandParser').CommandParser;
 var Chat = (function () {
     function Chat() {
-        this.chatroom = new Chatroom();
         this.commandParser = new CommandParser();
     }
     Chat.prototype.newConnection = function (socket) {
-        var username = "";
         var ip = socket.remoteAddress;
+        var that = this;
         console.log("New connection from " + ip);
         socket.write("Welcome to IDP AT Chat\r\n=======================\r\nUsername?:");
-        socket.on('data', _readNewLine(data));
+        socket.on('data', _readNewLine);
         socket.on('end', _endConnection);
-    };
-    Chat.prototype._readNewLine = function (data) {
-    };
-    Chat.prototype._endConnection = function () {
+        function _readNewLine(data) {
+            that.commandParser.parse(data, socket);
+        }
+        function _endConnection() {
+            that.commandParser.connectionLost(socket);
+        }
     };
     return Chat;
 })();
+exports.Chat = Chat;

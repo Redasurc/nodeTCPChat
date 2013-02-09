@@ -3,18 +3,7 @@ PORT = 8000;
 
 
 var net = require('net');
-var fs = require('fs');
-var vm = require('vm');
-
-var includeInThisContext = function(path) {
-    var code = fs.readFileSync(path);
-    vm.runInThisContext(code, path);
-}.bind(this);
-
-includeInThisContext("./classes/Chat.js");
-includeInThisContext("./classes/Chatroom.js");
-includeInThisContext("./classes/Client.js");
-includeInThisContext("./classes/CommandParser.js");
+var Chat = require('./classes/Chat').Chat;
 
 
 var chat = new Chat();

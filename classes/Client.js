@@ -5,9 +5,7 @@ var Client = (function () {
     }
     Client.prototype.setName = function (name) {
         this.username = name;
-    };
-    Client.prototype.setSocket = function (socket) {
-        this.socket = socket;
+        return this;
     };
     Client.prototype.getName = function () {
         return this.username;
@@ -15,16 +13,30 @@ var Client = (function () {
     Client.prototype.getSocket = function () {
         return this.socket;
     };
-    Client.prototype.write = function (msg) {
-        this.socket.write("\r" + msg + "\r\n");
-        this.sendNameHeader();
-    };
-    Client.prototype.writeRaw = function (msg) {
-        this.socket.write(msg);
-    };
-    Client.prototype.sendNameHeader = function () {
-        this.socket.write("    " + this.username + ": ");
+    Client.prototype.write = function (msg, mode) {
+        if(mode == undefined) {
+            mode = 0;
+        }
+        switch(mode) {
+            case 0:
+                this.socket.write(msg + "\r\n");
+                break;
+            case 1:
+                this.write(msg, 0);
+                this.write("", 3);
+                break;
+            case 2:
+                this.write("\r" + msg, 0);
+                this.write("", 3);
+                break;
+            case 3:
+                this.write("    " + this.username + ": ", 0);
+                break;
+            default:
+                throw new Exception('Invalid write mode: ' + mode + '. Must be 0,1,2 or 3');
+        }
+        return this;
     };
     return Client;
 })();
-exports = Client;
+exports.Client = Client;
